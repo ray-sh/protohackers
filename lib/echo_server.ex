@@ -8,6 +8,8 @@ defmodule EchoServer do
 
   @impl GenServer
   def init(_args) do
+    Task.Supervisor.start_link(name: MyTask, max_children: 40)
+
     listen_options = [
       ifaddr: {0, 0, 0, 0},
       mode: :binary,
@@ -32,15 +34,19 @@ defmodule EchoServer do
 
     case :gen_tcp.accept(state.lsocket) do
       {:ok, socket} ->
-        with {:ok, msg} <- read_msg(socket, "", 0) do
-          Logger.info("send received msg back")
-          :gen_tcp.send(socket, msg)
-        else
-          error ->
-            Logger.error(inspect(error))
-        end
+        Task.Supervisor.start_child(MyTask, fn ->
+          with {:ok, msg} <- read_msg(socket, "", 0) do
+            Logger.info("send received msg back")
+            :gen_tcp.send(socket, msg)
+          else
+            error ->
+              Logger.error(inspect(error))
+          end
 
-        :gen_tcp.close(socket)
+          Logger.info("close socket for client #{state.n_client}")
+          :gen_tcp.close(socket)
+        end)
+
         {:noreply, %{state | n_client: state.n_client + 1}, {:continue, :wait_connect}}
 
       {:error, reason} ->
