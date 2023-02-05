@@ -57,7 +57,7 @@ defmodule EchoServer do
   end
 
   defp read_msg(socket, bs, bs_size) do
-    case :gen_tcp.recv(socket, 0, 10_000) do
+    case :gen_tcp.recv(socket, 0) do
       {:ok, packet} when bs_size + byte_size(packet) > @buff_limit ->
         {:error, :out_of_buffer_limit}
 
