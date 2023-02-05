@@ -27,11 +27,9 @@ defmodule HackerTest do
   end
 
   test "multiple clients could send/rec msg" do
-    {:ok, pid} = Task.Supervisor.start_link()
-
     tasks =
-      for i <- 1..3 do
-        Task.Supervisor.async(pid, fn ->
+      for i <- 1..30 do
+        Task.async(fn ->
           {:ok, socket} =
             :gen_tcp.connect(~c"localhost", 5002, [mode: :binary, active: false], 15000)
 
@@ -39,7 +37,6 @@ defmodule HackerTest do
           assert :gen_tcp.shutdown(socket, :write)
           {:ok, return} = :gen_tcp.recv(socket, 0)
           assert return == "foo"
-          IO.inspect({:client, i})
         end)
       end
 

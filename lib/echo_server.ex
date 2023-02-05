@@ -8,14 +8,15 @@ defmodule EchoServer do
 
   @impl GenServer
   def init(_args) do
-    Task.Supervisor.start_link(name: MyTask, max_children: 40)
+    Task.Supervisor.start_link(name: MyTask, max_children: 100)
 
     listen_options = [
       ifaddr: {0, 0, 0, 0},
       mode: :binary,
       active: false,
       reuseaddr: true,
-      exit_on_close: false
+      exit_on_close: false,
+      backlog: 100
     ]
 
     case :gen_tcp.listen(5002, listen_options) do
