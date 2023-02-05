@@ -1,7 +1,7 @@
 defmodule EchoServer do
   use GenServer
   require Logger
-
+  @buff_limit 1024 * 100
   def start_link(_) do
     GenServer.start_link(__MODULE__, "")
   end
@@ -18,7 +18,7 @@ defmodule EchoServer do
 
     case :gen_tcp.listen(5002, listen_options) do
       {:ok, lsocket} ->
-        {:ok, %{lsocket: lsocket}, {:continue, :wait_connect}}
+        {:ok, %{lsocket: lsocket, n_client: 0}, {:continue, :wait_connect}}
 
       {:error, error} ->
         Logger.error("can't listen on the port #{inspect(error)}")
@@ -26,29 +26,43 @@ defmodule EchoServer do
     end
   end
 
-  @impl true
+  @impl GenServer
   def handle_continue(:wait_connect, state) do
+    Logger.info("waiting client #{state.n_client} ...")
+
     case :gen_tcp.accept(state.lsocket) do
       {:ok, socket} ->
-        {:ok, msg} = read_msg(socket, "")
-        Logger.info("send received msg #{msg} back")
-        :gen_tcp.send(socket, msg)
+        with {:ok, msg} <- read_msg(socket, "", 0) do
+          Logger.info("send received msg back")
+          :gen_tcp.send(socket, msg)
+        else
+          error ->
+            Logger.error(inspect(error))
+        end
+
         :gen_tcp.close(socket)
+        {:noreply, %{state | n_client: state.n_client + 1}, {:continue, :wait_connect}}
 
-      {:error, error} ->
-        Logger.error("accept error #{inspect(error)}")
+      {:error, reason} ->
+        Logger.error(inspect(reason))
+        {:stop, reason, state}
     end
-
-    {:noreply, state, {:continue, :wait_connect}}
   end
 
-  defp read_msg(socket, bs) do
+  defp read_msg(socket, bs, bs_size) do
     case :gen_tcp.recv(socket, 0, 10_000) do
+      {:ok, packet} when bs_size + byte_size(packet) > @buff_limit ->
+        {:error, :out_of_buffer_limit}
+
       {:ok, packet} ->
-        read_msg(socket, [bs, packet])
+        # Logger.debug(
+        #   "recevie #{byte_size(packet)} byte, buffer size is #{bs_size + byte_size(packet)}"
+        # )
+
+        read_msg(socket, [bs, packet], bs_size + byte_size(packet))
 
       {:error, :closed} ->
-        Logger.info("client closed")
+        Logger.info("Recieved byte size #{bs_size}")
         {:ok, bs}
     end
   end
