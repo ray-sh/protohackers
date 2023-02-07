@@ -9,7 +9,7 @@ defmodule Hacker.Application do
   def start(_type, _args) do
     children = [
       # Starts a worker by calling: Hacker.Worker.start_link(arg)
-      {PrimeServer, ""}
+      {PricesServer, ""}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
