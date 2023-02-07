@@ -42,4 +42,12 @@ defmodule HackerTest do
 
     Task.await_many(tasks)
   end
+
+  test "prime " do
+    {:ok, socket} = :gen_tcp.connect(~c"localhost", 5002, mode: :binary, active: false)
+    send = Jason.encode!(%{"method" => "isPrime", "number" => 1})
+    assert :gen_tcp.send(socket, send <> "\n") == :ok
+    {:ok, return} = :gen_tcp.recv(socket, 0)
+    assert return == Jason.encode!(%{"method" => "isPrime", "isPrime" => false}) <> "\n"
+  end
 end
