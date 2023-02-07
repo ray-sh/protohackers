@@ -54,7 +54,7 @@ defmodule PrimeServer do
     case :gen_tcp.recv(socket, 0) do
       {:ok, packet} ->
         case Jason.decode(packet) do
-          {:ok, %{"method" => "isPrime", "number" => num}} ->
+          {:ok, %{"method" => "isPrime", "number" => num}} when is_number(num) ->
             rsp = Jason.encode!(%{"method" => "isPrime", "prime" => prime?(num)})
             :gen_tcp.send(socket, [rsp, ?\n])
 
