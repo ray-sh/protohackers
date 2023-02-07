@@ -17,7 +17,8 @@ defmodule PrimeServer do
       reuseaddr: true,
       exit_on_close: false,
       backlog: 100,
-      packet: :line
+      packet: :line,
+      buffer: 100 * 1024
     ]
 
     case :gen_tcp.listen(5002, listen_options) do
