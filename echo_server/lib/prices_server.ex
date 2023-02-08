@@ -54,14 +54,14 @@ defmodule PricesServer do
     case :gen_tcp.recv(socket, 9) do
       {:ok, packet} ->
         case packet do
-          <<?I, ts::32, price::32>> ->
+          <<?I, ts::32-signed-big, price::32-signed-big>> ->
             handle_requests(socket, PricesDb.add(db, ts, price))
 
-          <<?Q, from::32, to::32>> ->
+          <<?Q, from::32-signed-big, to::32-signed-big>> ->
             result = PricesDb.query(db, from, to)
             {:ok, result}
             Logger.info("avg is #{result}")
-            :gen_tcp.send(socket, <<result::32>>)
+            :gen_tcp.send(socket, <<result::32-signed-big>>)
             handle_requests(socket, db)
 
           _ ->
