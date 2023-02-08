@@ -37,9 +37,7 @@ defmodule PricesServer do
     case :gen_tcp.accept(state.lsocket) do
       {:ok, socket} ->
         Task.Supervisor.start_child(MyTask, fn ->
-          result = handle_requests(socket, PricesDb.new())
-          Logger.info("avg is #{result}")
-          :gen_tcp.send(socket, <<result::32>>)
+          handle_requests(socket, PricesDb.new())
 
           :gen_tcp.close(socket)
         end)
@@ -60,7 +58,13 @@ defmodule PricesServer do
             handle_requests(socket, PricesDb.add(db, ts, price)) |> dbg()
 
           <<?Q, from::32, to::32>> ->
-            PricesDb.query(db, from, to)
+            result = PricesDb.query(db, from, to)
+            {:ok, result}
+            Logger.info("avg is #{result}")
+            :gen_tcp.send(socket, <<result::32>>)
+
+          _ ->
+            :error
         end
 
       {:error, :timeout} ->
@@ -68,7 +72,7 @@ defmodule PricesServer do
 
       other ->
         Logger.debug(inspect(other))
-        0
+        :error
     end
   end
 end
