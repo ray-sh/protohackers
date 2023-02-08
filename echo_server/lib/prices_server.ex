@@ -55,7 +55,7 @@ defmodule PricesServer do
       {:ok, packet} ->
         case packet do
           <<?I, ts::32, price::32>> ->
-            handle_requests(socket, PricesDb.add(db, ts, price)) |> dbg()
+            handle_requests(socket, PricesDb.add(db, ts, price))
 
           <<?Q, from::32, to::32>> ->
             result = PricesDb.query(db, from, to)
