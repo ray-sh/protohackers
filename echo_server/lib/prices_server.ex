@@ -62,6 +62,7 @@ defmodule PricesServer do
             {:ok, result}
             Logger.info("avg is #{result}")
             :gen_tcp.send(socket, <<result::32>>)
+            handle_requests(socket, db)
 
           _ ->
             :error
