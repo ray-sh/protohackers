@@ -38,10 +38,8 @@ defmodule PricesServer do
       {:ok, socket} ->
         Task.Supervisor.start_child(MyTask, fn ->
           result = handle_requests(socket, PricesDb.new())
-
-          if result do
-            :gen_tcp.send(socket, <<result::32>>)
-          end
+          Logger.info("avg is #{result}")
+          :gen_tcp.send(socket, <<result::32>>)
 
           :gen_tcp.close(socket)
         end)
@@ -59,7 +57,7 @@ defmodule PricesServer do
       {:ok, packet} ->
         case packet do
           <<?I, ts::32, price::32>> ->
-            handle_requests(socket, PricesDb.add(db, ts, price))
+            handle_requests(socket, PricesDb.add(db, ts, price)) |> dbg()
 
           <<?Q, from::32, to::32>> ->
             PricesDb.query(db, from, to)
@@ -70,7 +68,7 @@ defmodule PricesServer do
 
       other ->
         Logger.debug(inspect(other))
-        nil
+        0
     end
   end
 end
