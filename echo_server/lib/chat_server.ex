@@ -145,7 +145,7 @@ defmodule ChatHandler do
 
           for {pid, name} <- entries,
               name != state.name,
-              do: send(pid, {:broadcast, "* [#{state.name}] #{msg}\n"})
+              do: send(pid, {:broadcast, "[#{state.name}] #{msg}\n"})
         end)
 
       _ ->
