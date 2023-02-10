@@ -41,6 +41,7 @@ defmodule ChatServer do
         Logger.info("client connected #{inspect(socket)}")
         Logger.info("start chat handler")
         {:ok, handler} = GenServer.start_link(ChatHandler, socket)
+        # when use active mode, need pass ownership
         :gen_tcp.controlling_process(socket, handler)
         {:noreply, state, {:continue, :wait_con}}
 
