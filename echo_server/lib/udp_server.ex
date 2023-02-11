@@ -8,11 +8,7 @@ defmodule UdpServer do
 
   @impl true
   def init(_) do
-    listen_options = [
-      mode: :binary,
-      active: false,
-      ifaddr: {0, 0, 0, 0}
-    ]
+    listen_options = [:binary, active: false, recbuf: 1000, ip: {127, 0, 0, 1}]
 
     case :gen_udp.open(5002, listen_options) do
       {:ok, socket} ->
