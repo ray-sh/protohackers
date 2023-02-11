@@ -15,6 +15,8 @@ defmodule UdpServer do
 
     case :gen_udp.open(5002, listen_options) do
       {:ok, socket} ->
+        Logger.info("udp server start 5002")
+
         {:ok, %{socket: socket, db: %{"version" => "Protohackers in Elixir 1.0"}},
          {:continue, :wait_req}}
 
