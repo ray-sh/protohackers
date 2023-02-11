@@ -34,7 +34,7 @@ defmodule UdpServer do
               state
 
             [key, val] ->
-              %{state | db: Map.put(state.db, key, val)}
+              put_in(state, [:db, key], val)
 
             [key] ->
               :gen_udp.send(state.socket, ip, port, "#{key}=#{Map.get(state.db, key)}")
