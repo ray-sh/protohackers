@@ -18,9 +18,9 @@ defmodule ChatServer do
       packet: :line
     ]
 
-    case :gen_tcp.listen(5002, listen_options) do
+    case :gen_tcp.listen(5003, listen_options) do
       {:ok, socket} ->
-        Logger.info("chat server listend on 5002")
+        Logger.info("chat server listend on 5003")
         {:ok, %{lsocket: socket}, {:continue, :wait_con}}
 
       {:error, reason} ->
